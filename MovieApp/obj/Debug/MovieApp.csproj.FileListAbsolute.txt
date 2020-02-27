@@ -17,3 +17,4 @@ C:\Users\BBREWER2\Documents\Brandon Brewer\Projects\Midterm\MovieApp\MovieApp\ob
 C:\Users\BBREWER2\Documents\Brandon Brewer\Projects\Midterm\MovieApp\MovieApp\bin\Debug\Figgle.dll
 C:\Users\BBREWER2\Documents\Brandon Brewer\Projects\Midterm\MovieApp\MovieApp\bin\Debug\Figgle.xml
 C:\Users\BBREWER2\Documents\Brandon Brewer\Projects\Midterm\MovieApp\MovieApp\obj\Debug\MovieApp.csproj.CopyComplete
+C:\Users\BBREWER2\Documents\Brandon Brewer\Projects\Midterm\MovieApp\MovieApp\bin\Debug\userDB.txt

@@ -61,7 +61,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="UserNames.csv" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -73,6 +72,11 @@
     <None Include="movieDB.tsv" />
     <None Include="packages.config" />
     <None Include="Resources\movie_projector.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="userDB.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -13,18 +13,20 @@ namespace MovieApp
         {
             MovieDB movies = new MovieDB();
             MovieDB searchedMovies = new MovieDB();
+            UserDB users = new UserDB();
             string breadcrumb = "  ";
             int index = 0;
 
             Console.BackgroundColor = ConsoleColor.Black;
             PopulateMovieDB(movies);
+            PopulateUserDB(users);
             //PrintLogoAnimation(movies.Movies.Count);
             PrintLogo(movies.Movies.Count);
-            PrintMainMenu(movies, searchedMovies, index, breadcrumb);
+            PrintMainMenu(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
-        static void AdminAddMovie(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb)
+        static void AdminAddMovie(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
             bool isType;
             int year;
@@ -86,11 +88,11 @@ namespace MovieApp
             }
 
             PrintLogo(movies.Movies.Count);
-            PrintAdminMenu(movies, searchedMovies, index, breadcrumb);
+            PrintAdminMenu(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
-        static void AdminModifyMovie(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb)
+        static void AdminModifyMovie(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
             int movieID;
             bool isInt;
@@ -113,7 +115,7 @@ namespace MovieApp
                     PrintLogo(movies.Movies.Count);
                     PrintModifyMenu(movies, searchedMovies, index, breadcrumb, m);
                     PrintLogo(movies.Movies.Count);
-                    PrintAdminMenu(movies, searchedMovies, index, breadcrumb);
+                    PrintAdminMenu(movies, searchedMovies, index, breadcrumb, users);
                     break;
                 }
             }
@@ -124,12 +126,12 @@ namespace MovieApp
                 Console.WriteLine("\n UNKNOWN MOVIE ID");
                 System.Threading.Thread.Sleep(2000);
                 PrintLogo(movies.Movies.Count);
-                PrintAdminMenu(movies, searchedMovies, index, breadcrumb);
+                PrintAdminMenu(movies, searchedMovies, index, breadcrumb, users);
             }
         }
 
 
-        static void AdminRemoveMovie(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb)
+        static void AdminRemoveMovie(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
             int movieID;
             bool isInt;
@@ -153,7 +155,7 @@ namespace MovieApp
                     System.Threading.Thread.Sleep(2000);
                     movies.RemoveMovie(m);
                     PrintLogo(movies.Movies.Count);
-                    PrintAdminMenu(movies, searchedMovies, index, breadcrumb);
+                    PrintAdminMenu(movies, searchedMovies, index, breadcrumb, users);
                     break;
                 }
             }
@@ -164,14 +166,13 @@ namespace MovieApp
                 Console.WriteLine("\n UNKNOWN MOVIE ID");
                 System.Threading.Thread.Sleep(2000);
                 PrintLogo(movies.Movies.Count);
-                PrintAdminMenu(movies, searchedMovies, index, breadcrumb);
+                PrintAdminMenu(movies, searchedMovies, index, breadcrumb, users);
             }
         }
 
 
-        static void AskForCredential(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb)
+        static void AskForCredential(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
-            UserDB users = new UserDB();
             string userLoginInput;
             string userPasswordInput = null;
             bool isUser = false;
@@ -179,19 +180,6 @@ namespace MovieApp
             PrintLogo(movies.Movies.Count);
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.CursorVisible = true;
-            using (StreamReader sr = new StreamReader(@"UserNames.csv"))
-            {
-                sr.ReadLine();
-                string s;
-                string[] sArray;
-                while (sr.Peek() >= 0)
-                {
-                    s = sr.ReadLine();
-                    sArray = s.Split(',');
-                    users.AddUser(new UserCredentials(sArray[0], sArray[1], sArray[2]));
-                }
-            }
-            
             Console.Write(" Enter User Name (or enter \"USER\"): ");
             userLoginInput = Console.ReadLine().Trim().ToLower();
             Console.Write(" Enter Password (or enter \"password\"): ");
@@ -218,7 +206,7 @@ namespace MovieApp
                     {
                         isUser = true;
                         PrintLogo(movies.Movies.Count);
-                        PrintAdminMenu(movies, searchedMovies, index, breadcrumb);
+                        PrintAdminMenu(movies, searchedMovies, index, breadcrumb, users);
                         break;
                     }
                 }
@@ -231,12 +219,48 @@ namespace MovieApp
                 Console.WriteLine("\n\n UNKNOWN USER");
                 System.Threading.Thread.Sleep(2000);
                 PrintLogo(movies.Movies.Count);
-                PrintMainMenu(movies, searchedMovies, index, breadcrumb);
+                PrintMainMenu(movies, searchedMovies, index, breadcrumb, users);
             }
         }
 
 
-        static void GetAdminMenuInput(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb)
+        static void CreateAccount(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
+        {
+            PrintLogo(movies.Movies.Count);
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.CursorVisible = true;
+            string password = null;
+            Console.Write(" Enter your First Name: ");
+            string firstName = Console.ReadLine().Trim();
+            Console.Write("\n Enter your Last Name: ");
+            string lastName = Console.ReadLine().Trim();
+            string fullName = firstName + " " + lastName;
+            Console.Write("\n Enter User Name: ");
+            string userName = Console.ReadLine().Trim();
+            Console.Write("\n Enter Password: ");
+            while (true)
+            {
+                var key = Console.ReadKey(true);
+                if (key.Key == ConsoleKey.Enter) { break; }
+                if (key.Key == ConsoleKey.Backspace && password.Length > 0)
+                {
+                    Console.Write("\b \b");
+                    password = password.Substring(0, password.Length - 1);
+                    continue;
+                }
+                Console.Write("*");
+                password += key.KeyChar;
+            }
+
+            users.AddUser(new UserCredentials(fullName, userName, password));
+            string newUser = "\n" + fullName + "," + userName + "," + password;
+            File.AppendAllText(@"userDB.txt", newUser + password + Environment.NewLine);
+            PrintLogo(movies.Movies.Count);
+            PrintMainMenu(movies, searchedMovies, index, breadcrumb, users);
+        }
+
+
+        static void GetAdminMenuInput(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
             char input;
             List<char> validInput = new List<char> { '1', '2', '3', '4' };
@@ -247,14 +271,14 @@ namespace MovieApp
                 Console.Write("\b \b");
             } while (!validInput.Contains(input));
 
-            if (input == '1') { PrintLogo(movies.Movies.Count); AdminAddMovie(movies, searchedMovies, index, breadcrumb); }
-            else if (input == '2') { PrintLogo(movies.Movies.Count); AdminRemoveMovie(movies, searchedMovies, index, breadcrumb); }
-            else if (input == '3') { PrintLogo(movies.Movies.Count); AdminModifyMovie(movies, searchedMovies, index, breadcrumb); }
-            else if (input == '4') { PrintLogo(movies.Movies.Count); PrintMainMenu(movies, searchedMovies, index, breadcrumb); }
+            if (input == '1') { PrintLogo(movies.Movies.Count); AdminAddMovie(movies, searchedMovies, index, breadcrumb, users); }
+            else if (input == '2') { PrintLogo(movies.Movies.Count); AdminRemoveMovie(movies, searchedMovies, index, breadcrumb, users); }
+            else if (input == '3') { PrintLogo(movies.Movies.Count); AdminModifyMovie(movies, searchedMovies, index, breadcrumb, users); }
+            else if (input == '4') { PrintLogo(movies.Movies.Count); PrintMainMenu(movies, searchedMovies, index, breadcrumb, users); }
         }
 
 
-        static void GetFinalMenuInput(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb)
+        static void GetFinalMenuInput(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
             char input;
             List<char> validInput = new List<char> { '1', '2', '3', '4', '5', 'u', 'd' };
@@ -268,18 +292,24 @@ namespace MovieApp
             if (input == '1')
             {
                 PrintLogo(movies.Movies.Count);
-                PrintSearchedResultsNoMenu(movies, searchedMovies, index, breadcrumb);
+                PrintSearchedResultsNoMenu(movies, searchedMovies, index, breadcrumb, users);
             }
-            else if (input == '2') { PrintLogo(movies.Movies.Count); PrintSortMenu(movies, searchedMovies, index, breadcrumb); }
-            else if (input == '3') { PrintLogo(movies.Movies.Count); PrintSearchMenu(searchedMovies, searchedMovies, index, breadcrumb); }
-            else if (input == '4') { PrintLogo(movies.Movies.Count); PrintMainMenu(movies, searchedMovies, index, breadcrumb); }
+            else if (input == '2') { PrintLogo(movies.Movies.Count); PrintSortMenu(movies, searchedMovies, index, breadcrumb, users); }
+            else if (input == '3') { PrintLogo(movies.Movies.Count); PrintSearchMenu(searchedMovies, searchedMovies, index, breadcrumb, users); }
+            else if (input == '4') 
+            {
+                MovieDB movies2 = new MovieDB();
+                PopulateMovieDB(movies2);
+                PrintLogo(movies2.Movies.Count);
+                PrintMainMenu(movies2, searchedMovies, index, breadcrumb, users);
+            }
             else if (char.Parse(input.ToString().ToLower()) == 'u') 
             {
                 if ((Math.Floor(index / 7.0) + 1) < (Math.Ceiling(searchedMovies.Movies.Count / 7.0)))
                 {
                     index += 7;
                 }
-                PrintSearchedResults(movies, searchedMovies, index, breadcrumb);
+                PrintSearchedResults(movies, searchedMovies, index, breadcrumb, users);
             }
             else if (char.Parse(input.ToString().ToLower()) == 'd') 
             {
@@ -287,24 +317,25 @@ namespace MovieApp
                 {
                     index -= 7;
                 }
-                PrintSearchedResults(movies, searchedMovies, index, breadcrumb);
+                PrintSearchedResults(movies, searchedMovies, index, breadcrumb, users);
             }
         }
 
 
-        static void GetMainMenuInput(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb)
+        static void GetMainMenuInput(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
             char input;
-            List<char> validInput = new List<char> { '1', '2', '3' };
+            List<char> validInput = new List<char> { '1', '2', '3', '4' };
             do
             {
                 input = Console.ReadKey().KeyChar;
                 Console.Write("\b \b");
             } while (!validInput.Contains(input));
 
-            if (input == '1') { SearchMovies(movies, searchedMovies, index, breadcrumb); }
-            else if (input == '2') { AskForCredential(movies, searchedMovies, index, breadcrumb); }
-            else if (input == '3') { return; }
+            if (input == '1') { SearchMovies(movies, searchedMovies, index, breadcrumb, users); }
+            else if (input == '2') { AskForCredential(movies, searchedMovies, index, breadcrumb, users); }
+            else if (input == '3') { CreateAccount(movies, searchedMovies, index, breadcrumb, users); }
+            else if (input == '4') { return; }
         }
 
 
@@ -437,7 +468,7 @@ namespace MovieApp
         }
 
 
-        static void GetMoviePage(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, int i, int movieID)
+        static void GetMoviePage(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users, int i, int movieID)
         {
             bool movieFound = false;
             char input;
@@ -492,11 +523,11 @@ namespace MovieApp
                 Console.Write("\b \b");
             } while (input != 'b' && input != 'B');
 
-            if (input == 'b' || input == 'B') { PrintSearchedResults(movies, searchedMovies, index, breadcrumb); }
+            if (input == 'b' || input == 'B') { PrintSearchedResults(movies, searchedMovies, index, breadcrumb, users); }
         }
 
 
-        static void GetSearchActorMenuInput(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb)
+        static void GetSearchActorMenuInput(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
             char input;
             List<char> validInput = new List<char> { '1', '2', '3', '4', '5' };
@@ -506,14 +537,15 @@ namespace MovieApp
                 Console.Write("\b \b");
             } while (!validInput.Contains(input));
 
-            if (input == '1') { SearchLeadActor(movies, index, breadcrumb); }
-            else if (input == '2') { SearchSupportingActor(movies, index, breadcrumb); }
-            else if (input == '3') { SearchThirdActor(movies, index, breadcrumb); }
-            else if (input == '4') { SearchAnyActor(movies, index, breadcrumb); }
-            else if (input == '5') { PrintLogo(movies.Movies.Count); PrintMainMenu(movies, searchedMovies, index, breadcrumb); }
+            if (input == '1') { SearchLeadActor(movies, index, breadcrumb, users); }
+            else if (input == '2') { SearchSupportingActor(movies, index, breadcrumb, users); }
+            else if (input == '3') { SearchThirdActor(movies, index, breadcrumb, users); }
+            else if (input == '4') { SearchAnyActor(movies, index, breadcrumb, users); }
+            else if (input == '5') { PrintLogo(movies.Movies.Count); PrintMainMenu(movies, searchedMovies, index, breadcrumb, users); }
         }
 
-        static void GetSearchMenuInput(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb)
+
+        static void GetSearchMenuInput(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
             char input;
             List<char> validInput = new List<char> { '1', '2', '3', '4', '5', '6', '7', '8', '9' };
@@ -523,19 +555,25 @@ namespace MovieApp
                 Console.Write("\b \b");
             } while (!validInput.Contains(input));
 
-            if (input == '1') { SearchTitle(movies, index, breadcrumb); }
-            else if (input == '2') { SearchYear(movies, index, breadcrumb); }
-            else if (input == '3') { SearchGenre(movies, index, breadcrumb); }
-            else if (input == '4') { SearchImdbRating(movies, index, breadcrumb); }
-            else if (input == '5') { SearchRuntime(movies, index, breadcrumb); }
-            else if (input == '6') { SearchDirector(movies, index, breadcrumb); }
-            else if (input == '7') { SearchActor(movies, searchedMovies, index, breadcrumb); }
-            else if (input == '8') { SearchCharacter(movies, index, breadcrumb); }
-            else if (input == '9') { PrintLogo(movies.Movies.Count); PrintMainMenu(movies, searchedMovies, index, breadcrumb); }
+            if (input == '1') { SearchTitle(movies, index, breadcrumb, users); }
+            else if (input == '2') { SearchYear(movies, index, breadcrumb, users); }
+            else if (input == '3') { SearchGenre(movies, index, breadcrumb, users); }
+            else if (input == '4') { SearchImdbRating(movies, index, breadcrumb, users); }
+            else if (input == '5') { SearchRuntime(movies, index, breadcrumb, users); }
+            else if (input == '6') { SearchDirector(movies, index, breadcrumb, users); }
+            else if (input == '7') { SearchActor(movies, searchedMovies, index, breadcrumb, users); }
+            else if (input == '8') { SearchCharacter(movies, index, breadcrumb, users); }
+            else if (input == '9') 
+            {
+                MovieDB movies2 = new MovieDB();
+                PopulateMovieDB(movies2); 
+                PrintLogo(movies.Movies.Count); 
+                PrintMainMenu(movies, searchedMovies, index, breadcrumb, users); 
+            }
         }
 
 
-        static void GetSortMenuInput(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb)
+        static void GetSortMenuInput(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
             char input;
             List<char> validInput = new List<char> { '1', '2', '3', '4', '5', '6', '7', '8', '9' };
@@ -553,9 +591,9 @@ namespace MovieApp
             else if (input == '6') { searchedMovies = searchedMovies.SortMovies(searchedMovies, "Runtime", "desc"); }
             else if (input == '7') { searchedMovies = searchedMovies.SortMovies(searchedMovies, "IMDb Rating", "asc"); }
             else if (input == '8') { searchedMovies = searchedMovies.SortMovies(searchedMovies, "IMDb Rating", "desc"); }
-            else if (input == '9') { PrintLogo(movies.Movies.Count); PrintMainMenu(movies, searchedMovies, index, breadcrumb); }
+            else if (input == '9') { PrintLogo(movies.Movies.Count); PrintMainMenu(movies, searchedMovies, index, breadcrumb, users); }
 
-            PrintSearchedResults(movies, searchedMovies, index, breadcrumb);
+            PrintSearchedResults(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
@@ -577,7 +615,24 @@ namespace MovieApp
         }
 
 
-        static void PrintAdminMenu(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb)
+        static void PopulateUserDB(UserDB users)
+        {
+            using (StreamReader sr = new StreamReader(@"userDB.txt"))
+            {
+                sr.ReadLine();
+                string s;
+                string[] sArray;
+                while (sr.Peek() >= 0)
+                {
+                    s = sr.ReadLine();
+                    sArray = s.Split(',');
+                    users.AddUser(new UserCredentials(sArray[0], sArray[1], sArray[2]));
+                }
+            }
+        }
+
+
+        static void PrintAdminMenu(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
             Console.CursorVisible = false;
             Console.ForegroundColor = ConsoleColor.Cyan;
@@ -589,11 +644,11 @@ namespace MovieApp
             Console.WriteLine(" ║   [3] Modify Movie      ║");
             Console.WriteLine(" ║   [4] Main Menu         ║");
             Console.WriteLine(" ╚═════════════════════════╝");
-            GetAdminMenuInput(movies, searchedMovies, index, breadcrumb);
+            GetAdminMenuInput(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
-        static void PrintFinalMenu(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb)
+        static void PrintFinalMenu(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
             Console.CursorVisible = false;
             Console.ForegroundColor = ConsoleColor.DarkYellow;
@@ -605,7 +660,7 @@ namespace MovieApp
             Console.WriteLine(" ║   [3] Add to Search     ║");
             Console.WriteLine(" ║   [4] Main Menu         ║");
             Console.WriteLine(" ╚═════════════════════════╝");
-            GetFinalMenuInput(movies, searchedMovies, index, breadcrumb);
+            GetFinalMenuInput(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
@@ -691,7 +746,7 @@ namespace MovieApp
         }
 
 
-        static void PrintMainMenu(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb)
+        static void PrintMainMenu(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
             index = 0;
             breadcrumb = "  ";
@@ -702,9 +757,10 @@ namespace MovieApp
             Console.WriteLine(" ╠═════════════════════════╣");
             Console.WriteLine(" ║   [1] Search Movies     ║");
             Console.WriteLine(" ║   [2] Admin Mode        ║");
-            Console.WriteLine(" ║   [3] Quit              ║");
+            Console.WriteLine(" ║   [3] Create Account    ║");
+            Console.WriteLine(" ║   [4] Quit              ║");
             Console.WriteLine(" ╚═════════════════════════╝");
-            GetMainMenuInput(movies, searchedMovies, index, breadcrumb);
+            GetMainMenuInput(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
@@ -733,7 +789,7 @@ namespace MovieApp
         }
 
 
-        static void PrintSearchedResults(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb) 
+        static void PrintSearchedResults(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users) 
         {
             PrintLogo(movies.Movies.Count);
             Console.ForegroundColor = ConsoleColor.Yellow;
@@ -752,11 +808,11 @@ namespace MovieApp
                 Console.WriteLine(" ╚════════╩═════════════════════════════════════════════════════════════════════╩═══════╩═════════╩═════════════╝");
                 Console.WriteLine($"{"[U] Page Up   [D] Page Down",100}   [{Math.Floor(index / 7.0) + 1} of {Math.Ceiling(searchedMovies.Movies.Count / 7.0)}]");
             }
-            PrintFinalMenu(movies, searchedMovies, index, breadcrumb);
+            PrintFinalMenu(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
-        static void PrintSearchedResultsNoMenu(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb)
+        static void PrintSearchedResultsNoMenu(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
             int movieID;
             bool isInt;
@@ -785,10 +841,11 @@ namespace MovieApp
                 isInt = int.TryParse(Console.ReadLine().Trim(), out movieID);
             } while (isInt == false || movieID < 1);
 
-            GetMoviePage(movies, searchedMovies, index, breadcrumb, movies.Movies.Count, movieID);
+            GetMoviePage(movies, searchedMovies, index, breadcrumb, users, movies.Movies.Count, movieID);
         }
 
-        static void PrintSearchMenu(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb)
+
+        static void PrintSearchMenu(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
             index = 0;
             Console.CursorVisible = false;
@@ -806,28 +863,28 @@ namespace MovieApp
             Console.WriteLine(" ║   [8] Character         ║");
             Console.WriteLine(" ║   [9] Main Menu         ║");
             Console.WriteLine(" ╚═════════════════════════╝");
-            GetSearchMenuInput(movies, searchedMovies, index, breadcrumb);
+            GetSearchMenuInput(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
-        static void PrintSearchActorMenu(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb)
+        static void PrintSearchActorMenu(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
             Console.CursorVisible = false;
             Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine(" ╔═════════════════════════╗");
-            Console.WriteLine(" ║    Search Actor Menu    ║");
-            Console.WriteLine(" ╠═════════════════════════╣");
-            Console.WriteLine(" ║   [1] Lead Actor        ║");
-            Console.WriteLine(" ║   [2] Supporting Actor  ║");
-            Console.WriteLine(" ║   [3] Third Actor       ║");
-            Console.WriteLine(" ║   [4] Any Actor         ║");
-            Console.WriteLine(" ║   [5] Main Menu         ║");
-            Console.WriteLine(" ╚═════════════════════════╝");
-            GetSearchActorMenuInput(movies, searchedMovies, index, breadcrumb);
+            Console.WriteLine(" ╔══════════════════════════╗");
+            Console.WriteLine(" ║    Search Actor Menu     ║");
+            Console.WriteLine(" ╠══════════════════════════╣");
+            Console.WriteLine(" ║   [1] Lead Actor         ║");
+            Console.WriteLine(" ║   [2] Supporting Actor   ║");
+            Console.WriteLine(" ║   [3] Third Actor        ║");
+            Console.WriteLine(" ║   [4] Any Actor          ║");
+            Console.WriteLine(" ║   [5] Main Menu          ║");
+            Console.WriteLine(" ╚══════════════════════════╝");
+            GetSearchActorMenuInput(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
-        static void PrintSortMenu(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb)
+        static void PrintSortMenu(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
             Console.CursorVisible = false;
             Console.ForegroundColor = ConsoleColor.DarkYellow;
@@ -844,18 +901,18 @@ namespace MovieApp
             Console.WriteLine(" ║   [8] IMDb Rating (desc)   ║");
             Console.WriteLine(" ║   [9] Main Menu            ║");
             Console.WriteLine(" ╚════════════════════════════╝");
-            GetSortMenuInput(movies, searchedMovies, index, breadcrumb);
+            GetSortMenuInput(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
-        static void SearchActor(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb)
+        static void SearchActor(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
             PrintLogo(movies.Movies.Count);
-            PrintSearchActorMenu(movies, searchedMovies, index, breadcrumb);
+            PrintSearchActorMenu(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
-        static void SearchAnyActor(MovieDB movies, int index, string breadcrumb)
+        static void SearchAnyActor(MovieDB movies, int index, string breadcrumb, UserDB users)
         {
             MovieDB searchedMovies = new MovieDB();
             PrintLogo(movies.Movies.Count);
@@ -885,11 +942,11 @@ namespace MovieApp
                 }
             }
             breadcrumb += $"Any Actor: {input} | ";
-            PrintSearchedResults(movies, searchedMovies, index, breadcrumb);
+            PrintSearchedResults(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
-        static void SearchCharacter(MovieDB movies, int index, string breadcrumb)
+        static void SearchCharacter(MovieDB movies, int index, string breadcrumb, UserDB users)
         {
             MovieDB searchedMovies = new MovieDB();
 
@@ -922,11 +979,11 @@ namespace MovieApp
                 }
             }
             breadcrumb += $"Character: {input} | ";
-            PrintSearchedResults(movies, searchedMovies, index, breadcrumb);
+            PrintSearchedResults(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
-        static void SearchDirector(MovieDB movies, int index, string breadcrumb)
+        static void SearchDirector(MovieDB movies, int index, string breadcrumb, UserDB users)
         {
             MovieDB searchedMovies = new MovieDB();
 
@@ -943,11 +1000,11 @@ namespace MovieApp
                 }
             }
             breadcrumb += $"Director: {input} | ";
-            PrintSearchedResults(movies, searchedMovies, index, breadcrumb);
+            PrintSearchedResults(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
-        static void SearchGenre(MovieDB movies, int index, string breadcrumb)
+        static void SearchGenre(MovieDB movies, int index, string breadcrumb, UserDB users)
         {
             MovieDB searchedMovies = new MovieDB();
             PrintLogo(movies.Movies.Count);
@@ -964,11 +1021,11 @@ namespace MovieApp
                 }
             }
             breadcrumb += $"Genre: {input} | ";
-            PrintSearchedResults(movies, searchedMovies, index, breadcrumb);
+            PrintSearchedResults(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
-        static void SearchImdbRating(MovieDB movies, int index, string breadcrumb)
+        static void SearchImdbRating(MovieDB movies, int index, string breadcrumb, UserDB users)
         {
             MovieDB searchedMovies = new MovieDB();
             bool isInt;
@@ -998,11 +1055,11 @@ namespace MovieApp
                 }
             }
             breadcrumb += $"IMDb Rating: {inputLowerBound}-{inputUpperBound} | ";
-            PrintSearchedResults(movies, searchedMovies, index, breadcrumb);
+            PrintSearchedResults(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
-        static void SearchLeadActor(MovieDB movies, int index, string breadcrumb)
+        static void SearchLeadActor(MovieDB movies, int index, string breadcrumb, UserDB users)
         {
             MovieDB searchedMovies = new MovieDB();
             PrintLogo(movies.Movies.Count);
@@ -1018,11 +1075,11 @@ namespace MovieApp
                 }
             }
             breadcrumb += $"Lead Actor: {input} | ";
-            PrintSearchedResults(movies, searchedMovies, index, breadcrumb);
+            PrintSearchedResults(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
-        static void SearchRuntime(MovieDB movies, int index, string breadcrumb)
+        static void SearchRuntime(MovieDB movies, int index, string breadcrumb, UserDB users)
         {
             MovieDB searchedMovies = new MovieDB();
             bool isInt;
@@ -1052,11 +1109,11 @@ namespace MovieApp
                 }
             }
             breadcrumb += $"Runtime: {inputLowerBound}mins-{inputUpperBound}mins | ";
-            PrintSearchedResults(movies, searchedMovies, index, breadcrumb);
+            PrintSearchedResults(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
-        static void SearchSupportingActor(MovieDB movies, int index, string breadcrumb)
+        static void SearchSupportingActor(MovieDB movies, int index, string breadcrumb, UserDB users)
         {
             MovieDB searchedMovies = new MovieDB();
             PrintLogo(movies.Movies.Count);
@@ -1072,18 +1129,18 @@ namespace MovieApp
                 }
             }
             breadcrumb += $"Supporting Actor: {input} | ";
-            PrintSearchedResults(movies, searchedMovies, index, breadcrumb);
+            PrintSearchedResults(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
-        static void SearchMovies(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb)
+        static void SearchMovies(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
             PrintLogo(movies.Movies.Count);
-            PrintSearchMenu(movies, searchedMovies, index, breadcrumb);
+            PrintSearchMenu(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
-        static void SearchThirdActor(MovieDB movies, int index, string breadcrumb)
+        static void SearchThirdActor(MovieDB movies, int index, string breadcrumb, UserDB users)
         {
             MovieDB searchedMovies = new MovieDB();
             PrintLogo(movies.Movies.Count);
@@ -1099,11 +1156,11 @@ namespace MovieApp
                 }
             }
             breadcrumb += $"Third Actor: {input} | ";
-            PrintSearchedResults(movies, searchedMovies, index, breadcrumb);
+            PrintSearchedResults(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
-        static void SearchTitle(MovieDB movies, int index, string breadcrumb)
+        static void SearchTitle(MovieDB movies, int index, string breadcrumb, UserDB users)
         {
             MovieDB searchedMovies = new MovieDB();
 
@@ -1120,11 +1177,11 @@ namespace MovieApp
                 }
             }
             breadcrumb += $"Title: {input} | ";
-            PrintSearchedResults(movies, searchedMovies, index, breadcrumb);
+            PrintSearchedResults(movies, searchedMovies, index, breadcrumb, users);
         }
 
 
-        static void SearchYear(MovieDB movies, int index, string breadcrumb)
+        static void SearchYear(MovieDB movies, int index, string breadcrumb, UserDB users)
         {
             MovieDB searchedMovies = new MovieDB();
             bool isInt;
@@ -1154,7 +1211,7 @@ namespace MovieApp
                 }
             }
             breadcrumb += $"Year: {inputLowerBound}-{inputUpperBound} | ";
-            PrintSearchedResults(movies, searchedMovies, index, breadcrumb);
+            PrintSearchedResults(movies, searchedMovies, index, breadcrumb, users);
         }
     }
 }
