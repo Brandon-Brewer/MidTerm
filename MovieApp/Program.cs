@@ -816,7 +816,7 @@ namespace MovieApp
                 Console.WriteLine(String.Concat(Enumerable.Repeat(" ", x)) + @" ██| |_| | |  | | |_| | |_) ███");
                 Console.WriteLine(String.Concat(Enumerable.Repeat(" ", x)) + @" ██ \___/|_|  |_|____/|_.__/███");
                 Console.WriteLine(String.Concat(Enumerable.Repeat(" ", x)) + @" ██████████████████████████████");
-                System.Threading.Thread.Sleep(10);
+                System.Threading.Thread.Sleep(15);
             }
 
             Console.Clear();
