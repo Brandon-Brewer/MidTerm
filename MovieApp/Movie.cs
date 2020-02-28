@@ -22,6 +22,7 @@ namespace MovieApp
         private string character1;
         private string character2;
         private string character3;
+        private List<string> messagePosts;
         private static int count = 1;
         #endregion  fields
 
@@ -40,12 +41,13 @@ namespace MovieApp
         public string Character1 { get => character1; set => character1 = value; }
         public string Character2 { get => character2; set => character2 = value; }
         public string Character3 { get => character3; set => character3 = value; }
+        public List<string> MessagePosts { get => messagePosts; set => messagePosts = value; }
         #endregion properties
 
 
         #region constructors
         public Movie(string title, int year, int runTime, double imdbRating, string genre, string director,
-                     string leadActor, string supportingActor, string thirdActor, string character1, string character2, string character3)
+                     string leadActor, string supportingActor, string thirdActor, string character1, string character2, string character3, List<string> messagePosts)
         {
             this.id = count;
             this.title = title;
@@ -60,6 +62,7 @@ namespace MovieApp
             this.character1 = character1;
             this.character2 = character2;
             this.character3 = character3;
+            this.messagePosts = messagePosts;
             count++;
         }
         #endregion constructors

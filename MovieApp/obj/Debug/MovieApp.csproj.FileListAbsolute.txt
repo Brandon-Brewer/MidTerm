@@ -18,3 +18,4 @@ C:\Users\BBREWER2\Documents\Brandon Brewer\Projects\Midterm\MovieApp\MovieApp\bi
 C:\Users\BBREWER2\Documents\Brandon Brewer\Projects\Midterm\MovieApp\MovieApp\bin\Debug\Figgle.xml
 C:\Users\BBREWER2\Documents\Brandon Brewer\Projects\Midterm\MovieApp\MovieApp\obj\Debug\MovieApp.csproj.CopyComplete
 C:\Users\BBREWER2\Documents\Brandon Brewer\Projects\Midterm\MovieApp\MovieApp\bin\Debug\userDB.txt
+C:\Users\BBREWER2\Documents\Brandon Brewer\Projects\Midterm\MovieApp\MovieApp\bin\Debug\DuoVia.FuzzyStrings.dll

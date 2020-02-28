@@ -1,4 +1,5 @@
-﻿using Figgle;
+﻿using DuoVia.FuzzyStrings;
+using Figgle;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,8 +21,7 @@ namespace MovieApp
             Console.BackgroundColor = ConsoleColor.Black;
             PopulateMovieDB(movies);
             PopulateUserDB(users);
-            //PrintLogoAnimation(movies.Movies.Count);
-            PrintLogo(movies.Movies.Count);
+            PrintLogoAnimation(movies.Movies.Count);
             PrintMainMenu(movies, searchedMovies, index, breadcrumb, users);
         }
 
@@ -75,7 +75,7 @@ namespace MovieApp
             Console.Write(" Third Character: ");
             string character3 = Console.ReadLine();
 
-            movies.AddMovie(new Movie(title, year, runTime, imdbRating, genre, director, leadActor, supportingActor, thirdActor, character1, character2, character3));
+            movies.AddMovie(new Movie(title, year, runTime, imdbRating, genre, director, leadActor, supportingActor, thirdActor, character1, character2, character3, new List<string>{ }));
             
             for (int i = 0; i < 7; i++)
             {
@@ -171,7 +171,50 @@ namespace MovieApp
         }
 
 
-        static void AskForCredential(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
+        static string AskForCredential(MovieDB movies, UserDB users)
+        {
+            string userLoginInput;
+            string userPasswordInput = null;
+            bool isUser = false;
+
+            PrintLogo(movies.Movies.Count);
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.CursorVisible = true;
+            Console.Write(" Enter User Name (or enter \"USER\"): ");
+            userLoginInput = Console.ReadLine().Trim().ToLower();
+            Console.Write(" Enter Password (or enter \"password\"): ");
+
+            while (true)
+            {
+                var key = Console.ReadKey(true);
+                if (key.Key == ConsoleKey.Enter) { break; }
+                if (key.Key == ConsoleKey.Backspace && userPasswordInput.Length > 0)
+                {
+                    Console.Write("\b \b");
+                    userPasswordInput = userPasswordInput.Substring(0, userPasswordInput.Length - 1);
+                    continue;
+                }
+                Console.Write("*");
+                userPasswordInput += key.KeyChar;
+            }
+
+            foreach (UserCredentials u in users.User)
+            {
+                if (u.UserLogin.ToLower() == userLoginInput)
+                {
+                    if (u.Password == userPasswordInput)
+                    {
+                        isUser = true;
+                        PrintLogo(movies.Movies.Count);
+                        return u.UserName;
+                    }
+                }
+            }
+            return "Not Found";
+        }
+
+
+            static void AskForCredential(MovieDB movies, MovieDB searchedMovies, int index, string breadcrumb, UserDB users)
         {
             string userLoginInput;
             string userPasswordInput = null;
@@ -298,10 +341,18 @@ namespace MovieApp
             else if (input == '3') { PrintLogo(movies.Movies.Count); PrintSearchMenu(searchedMovies, searchedMovies, index, breadcrumb, users); }
             else if (input == '4') 
             {
-                MovieDB movies2 = new MovieDB();
-                PopulateMovieDB(movies2);
-                PrintLogo(movies2.Movies.Count);
-                PrintMainMenu(movies2, searchedMovies, index, breadcrumb, users);
+                if (movies.Movies.Count < 185000)
+                {
+                    MovieDB movies2 = new MovieDB();
+                    PopulateMovieDB(movies2);
+                    PrintLogo(movies2.Movies.Count);
+                    PrintMainMenu(movies2, searchedMovies, index, breadcrumb, users);
+                }
+                else
+                {
+                    PrintLogo(movies.Movies.Count);
+                    PrintMainMenu(movies, searchedMovies, index, breadcrumb, users);
+                }
             }
             else if (char.Parse(input.ToString().ToLower()) == 'u') 
             {
@@ -506,6 +557,23 @@ namespace MovieApp
                     if (m.ThirdActor != @"\N") { Console.WriteLine($" {m.ThirdActor,-24} .... {m.Character3}"); }
                     Console.WriteLine($" ══════════════════════════════════════════════════════");
                     Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine(" Hit [P] to Post");
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine($" ════════════════════ MESSAGE BOARD ════════════════════");
+                    if (m.MessagePosts.Count > 0)
+                    {
+                        for (int x = 0; x < m.MessagePosts.Count; x++)
+                        {
+                            string[] strArray = m.MessagePosts[x].Split(',');
+                            Console.ForegroundColor = ConsoleColor.Cyan;
+                            Console.WriteLine($"\n {strArray[0]} said:");
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            Console.WriteLine($" {strArray[1]}");
+                        }
+                    }
+                    Console.WriteLine($" ═══════════════════════════════════════════════════════");
+                    Console.SetCursorPosition(0, 0);
                     break;
                 }
             }
@@ -521,9 +589,38 @@ namespace MovieApp
                 Console.CursorVisible = false;
                 input = Console.ReadKey().KeyChar;
                 Console.Write("\b \b");
-            } while (input != 'b' && input != 'B');
+            } while (input != 'b' && input != 'B' && input != 'p' && input != 'P');
 
             if (input == 'b' || input == 'B') { PrintSearchedResults(movies, searchedMovies, index, breadcrumb, users); }
+            if (input == 'p' || input == 'P')
+            {
+                string userName = AskForCredential(movies, users);
+                if (userName == "Not Found")
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("\n\n USER NOT FOUND");
+                    System.Threading.Thread.Sleep(2000);
+                    GetMoviePage(movies, searchedMovies, index, breadcrumb, users, i, movieID);
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.CursorVisible = true;
+                    Console.WriteLine(" New Post:\n");
+                    Console.Write(" ");
+                    string messagePost = Console.ReadLine();
+                    messagePost = $"{userName},{messagePost}";
+                    foreach (Movie m in movies.Movies)
+                    {
+                        if (m.Id == movieID)
+                        {
+                            m.MessagePosts.Add(messagePost);
+                            break;
+                        }
+                    }
+                    GetMoviePage(movies, searchedMovies, index, breadcrumb, users, i, movieID);
+                }
+            }
         }
 
 
@@ -609,7 +706,7 @@ namespace MovieApp
                     s = sr.ReadLine();
                     sArray = s.Split('\t');
                     movies.AddMovie(new Movie(sArray[1], int.Parse(sArray[2]), int.Parse(sArray[3]), double.Parse(sArray[4]), sArray[5],
-                                              sArray[6], sArray[7], sArray[8], sArray[9], sArray[10], sArray[11], sArray[12]));
+                                              sArray[6], sArray[7], sArray[8], sArray[9], sArray[10], sArray[11], sArray[12], new List<string> { }));
                 }
             }
         }
@@ -652,14 +749,14 @@ namespace MovieApp
         {
             Console.CursorVisible = false;
             Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine(" ╔═════════════════════════╗");
-            Console.WriteLine(" ║          Menu           ║");
-            Console.WriteLine(" ╠═════════════════════════╣");
-            Console.WriteLine(" ║   [1] Go to Movie Page  ║");
-            Console.WriteLine(" ║   [2] Sort              ║");
-            Console.WriteLine(" ║   [3] Add to Search     ║");
-            Console.WriteLine(" ║   [4] Main Menu         ║");
-            Console.WriteLine(" ╚═════════════════════════╝");
+            Console.WriteLine(" ╔══════════════════════════╗");
+            Console.WriteLine(" ║           Menu           ║");
+            Console.WriteLine(" ╠══════════════════════════╣");
+            Console.WriteLine(" ║   [1] Go to Movie Page   ║");
+            Console.WriteLine(" ║   [2] Sort               ║");
+            Console.WriteLine(" ║   [3] Add to Search      ║");
+            Console.WriteLine(" ║   [4] Main Menu          ║");
+            Console.WriteLine(" ╚══════════════════════════╝");
             GetFinalMenuInput(movies, searchedMovies, index, breadcrumb, users);
         }
 
@@ -719,7 +816,7 @@ namespace MovieApp
                 Console.WriteLine(String.Concat(Enumerable.Repeat(" ", x)) + @" ██| |_| | |  | | |_| | |_) ███");
                 Console.WriteLine(String.Concat(Enumerable.Repeat(" ", x)) + @" ██ \___/|_|  |_|____/|_.__/███");
                 Console.WriteLine(String.Concat(Enumerable.Repeat(" ", x)) + @" ██████████████████████████████");
-                System.Threading.Thread.Sleep(15);
+                System.Threading.Thread.Sleep(10);
             }
 
             Console.Clear();
@@ -918,7 +1015,7 @@ namespace MovieApp
             PrintLogo(movies.Movies.Count);
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.CursorVisible = true;
-            Console.Write("Enter an Actor: ");
+            Console.Write(" Enter an Actor: ");
             string input = Console.ReadLine().Trim().ToLower();
             foreach (Movie m in movies.Movies)
             {
@@ -953,7 +1050,7 @@ namespace MovieApp
             PrintLogo(movies.Movies.Count);
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.CursorVisible = true;
-            Console.Write("Enter a Character: ");
+            Console.Write(" Enter a Character: ");
             string input = Console.ReadLine().Trim().ToLower();
             foreach (Movie m in movies.Movies)
             {
@@ -986,19 +1083,51 @@ namespace MovieApp
         static void SearchDirector(MovieDB movies, int index, string breadcrumb, UserDB users)
         {
             MovieDB searchedMovies = new MovieDB();
+            bool isMatch = false;
 
             PrintLogo(movies.Movies.Count);
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.CursorVisible = true;
-            Console.Write("Enter a Director: ");
+            Console.Write(" Enter a Director: ");
             string input = Console.ReadLine().Trim().ToLower();
             foreach (Movie m in movies.Movies)
             {
                 if (m.Director.ToLower().Contains(input))
                 {
+                    isMatch = true;
                     searchedMovies.AddMovie(m);
                 }
             }
+
+            if (!isMatch)
+            {
+                List<string> directors = new List<string>();
+                double coefficient;
+
+                Console.WriteLine("\n Director not found. Did you mean:\n");
+                Console.ForegroundColor = ConsoleColor.Yellow;
+
+                foreach (Movie m in movies.Movies)
+                {
+                    if (!directors.Contains(m.Director)) 
+                    {
+                        directors.Add(m.Director);
+                        coefficient = input.LevenshteinDistance(m.Director);
+                        if(coefficient < 4)
+                        {
+                            Console.WriteLine($" {m.Director}");
+                        }
+                    }
+                }
+
+                char cont;
+                do
+                {
+                    Console.WriteLine("\nHit [C] to continue");
+                    cont = Console.ReadKey().KeyChar;
+                } while (cont != 'C' && cont != 'c'); 
+            }
+
             breadcrumb += $"Director: {input} | ";
             PrintSearchedResults(movies, searchedMovies, index, breadcrumb, users);
         }
@@ -1011,7 +1140,7 @@ namespace MovieApp
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             PrintGenreMenu();
             Console.CursorVisible = true;
-            Console.Write("Enter a Genre: ");
+            Console.Write(" Enter a Genre: ");
             string input = Console.ReadLine().Trim().ToLower();
             foreach (Movie m in movies.Movies)
             {
@@ -1037,14 +1166,14 @@ namespace MovieApp
 
             do
             {
-                Console.Write("Enter a Lower Bound IMDb Rating: ");
-                isInt = int.TryParse(Console.ReadLine(), out inputLowerBound);
+                Console.Write(" Enter a Lower Bound IMDb Rating: ");
+                isInt = int.TryParse(Console.ReadLine().Trim(), out inputLowerBound);
             } while (!isInt || inputLowerBound < 0 || inputLowerBound > 10);
 
             do
             {
-                Console.Write("\nEnter a Upper Bound IMDb Rating: ");
-                isInt = int.TryParse(Console.ReadLine(), out inputUpperBound);
+                Console.Write("\n Enter a Upper Bound IMDb Rating: ");
+                isInt = int.TryParse(Console.ReadLine().Trim(), out inputUpperBound);
             } while (!isInt || inputUpperBound < 0 || inputUpperBound > 10);
 
             foreach (Movie m in movies.Movies)
@@ -1065,7 +1194,7 @@ namespace MovieApp
             PrintLogo(movies.Movies.Count);
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.CursorVisible = true;
-            Console.Write("Enter a Lead Actor: ");
+            Console.Write(" Enter a Lead Actor: ");
             string input = Console.ReadLine().Trim().ToLower();
             foreach (Movie m in movies.Movies)
             {
@@ -1091,14 +1220,14 @@ namespace MovieApp
 
             do
             {
-                Console.Write("Enter a Lower Bound Runtime: ");
-                isInt = int.TryParse(Console.ReadLine(), out inputLowerBound);
+                Console.Write(" Enter a Lower Bound Runtime: ");
+                isInt = int.TryParse(Console.ReadLine().Trim(), out inputLowerBound);
             } while (!isInt || inputLowerBound < 0 || inputLowerBound > 999);
 
             do
             {
-                Console.Write("\nEnter a Upper Bound Runtime: ");
-                isInt = int.TryParse(Console.ReadLine(), out inputUpperBound);
+                Console.Write("\n Enter a Upper Bound Runtime: ");
+                isInt = int.TryParse(Console.ReadLine().Trim(), out inputUpperBound);
             } while (!isInt || inputUpperBound < 0 || inputUpperBound > 999);
 
             foreach (Movie m in movies.Movies)
@@ -1119,7 +1248,7 @@ namespace MovieApp
             PrintLogo(movies.Movies.Count);
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.CursorVisible = true;
-            Console.Write("Enter a Supporting Actor: ");
+            Console.Write(" Enter a Supporting Actor: ");
             string input = Console.ReadLine().Trim().ToLower();
             foreach (Movie m in movies.Movies)
             {
@@ -1146,7 +1275,7 @@ namespace MovieApp
             PrintLogo(movies.Movies.Count);
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.CursorVisible = true;
-            Console.Write("Enter a Third Actor: ");
+            Console.Write(" Enter a Third Actor: ");
             string input = Console.ReadLine().Trim().ToLower();
             foreach (Movie m in movies.Movies)
             {
@@ -1167,7 +1296,7 @@ namespace MovieApp
             PrintLogo(movies.Movies.Count);
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.CursorVisible = true;
-            Console.Write("Enter a Title: ");
+            Console.Write(" Enter a Title: ");
             string input = Console.ReadLine().Trim().ToLower();
             foreach (Movie m in movies.Movies)
             {
@@ -1193,14 +1322,14 @@ namespace MovieApp
 
             do
             {
-                Console.Write("Enter a Lower Bound Year: ");
-                isInt = int.TryParse(Console.ReadLine(), out inputLowerBound);
+                Console.Write(" Enter a Lower Bound Year: ");
+                isInt = int.TryParse(Console.ReadLine().Trim(), out inputLowerBound);
             } while (!isInt || inputLowerBound < 1850 || inputLowerBound > 2025);
 
             do
             {
-                Console.Write("\nEnter a Upper Bound Year: ");
-                isInt = int.TryParse(Console.ReadLine(), out inputUpperBound);
+                Console.Write("\n Enter a Upper Bound Year: ");
+                isInt = int.TryParse(Console.ReadLine().Trim(), out inputUpperBound);
             } while (!isInt || inputUpperBound < 1850 || inputUpperBound > 2025);
 
             foreach (Movie m in movies.Movies)
