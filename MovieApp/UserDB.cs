@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MovieApp
 {
-    class UserDB
+    public class UserDB
     {
         private List<UserCredentials> user;
         public List<UserCredentials> User { get => user; set => user = value; }

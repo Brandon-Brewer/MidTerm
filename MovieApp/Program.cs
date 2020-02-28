@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace MovieApp
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
@@ -171,7 +171,7 @@ namespace MovieApp
         }
 
 
-        static string AskForCredential(MovieDB movies, UserDB users)
+        public static string AskForCredential(MovieDB movies, UserDB users)
         {
             string userLoginInput;
             string userPasswordInput = null;

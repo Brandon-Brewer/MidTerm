@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MovieApp
 {
-    class UserCredentials
+    public class UserCredentials
     {
         #region fields
         private string userName;

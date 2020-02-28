@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MovieApp
 {
-    class MovieDB
+    public class MovieDB
     {
         private List<Movie> movies;
         public List<Movie> Movies { get => movies; set => movies = value; }

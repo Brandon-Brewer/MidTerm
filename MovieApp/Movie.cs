@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MovieApp
 {
-    class Movie
+    public class Movie
     {
         #region fields
         private int id;
@@ -46,6 +46,11 @@ namespace MovieApp
 
 
         #region constructors
+        public Movie()
+        {
+        }
+
+
         public Movie(string title, int year, int runTime, double imdbRating, string genre, string director,
                      string leadActor, string supportingActor, string thirdActor, string character1, string character2, string character3, List<string> messagePosts)
         {
